@@ -1,20 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
-from pydantic import BaseModel
-from sqlalchemy import (
-    create_engine,
-    MetaData,
-)
-
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-engine = create_engine("sqlite:///./.venv/server/master.db")
-metadata = MetaData()
-Base = declarative_base()
-Session = sessionmaker(bind=engine)
-session = Session()
 app = FastAPI()
 
 origins = [
@@ -29,20 +15,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-class GameTurn(BaseModel):
-    game_id: int
-    turn_dd: int
-    red_score: int
-    blue_score: int
-    active_player: str
-    move_start: str
-    move_end: str
 
 def create_game_table():
     sql_create_game_table = """ Create TABLE IF NOT EXISTS game (
@@ -50,12 +27,10 @@ def create_game_table():
                                                  date INTEGER UNIQUE,
                                                  winner text
     );"""
-    # Drop query for debugging / dev
-    sql_drop_game_table = """ DROP TABLE IF EXISTS game;"""
+    
     conn = sqlite3.connect('./master.db')
     c = conn.cursor()
     c.execute(sql_create_game_table)
-    
     conn.commit()
     conn.close()
 
@@ -69,8 +44,7 @@ def create_turns_table():
                                                  move_start TEXT,
                                                  move_end TEXT
     )"""
-    # Drop query for debugging / dev
-    sql_drop_turns_table = """ DROP TABLE IF EXISTS turns;"""
+    
     conn = sqlite3.connect('./master.db')
     c = conn.cursor()
     c.execute(sql_create_turns_table)
